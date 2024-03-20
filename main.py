@@ -16,16 +16,24 @@ stateResults = False
 startGame = False
 scores = [0,0] 
 
+wonText = "You Won!!"
+loseText = "AI Won!"
+drawText = "Draw"
+
 while True:
-  imgBG = cv2.imread("Resources/BG2.png")
+  imgBG = cv2.imread("Resources/BG.png")
   success, img = cap.read()
-  #img = cv2.flip(img,1)
+  img = cv2.flip(img,1)
 
   imgScaled = cv2.resize(img,(0,0), None,0.875,0.875)
   imgScaled = imgScaled[:,80:480]
 #Find Hand
   hands, img = detector.findHands(imgScaled)
   imgBG[233:653,796:1196] = imgScaled 
+
+  wonFlag = False
+  loseFlag = False
+
   if startGame: 
     if stateResults is False:
       timer = time.time() - initialTime
@@ -52,19 +60,31 @@ while True:
             (playerMove == 2 and randNum == 1) or \
             (playerMove == 3 and randNum == 2):
             scores[1] += 1
+            wonFlag = True
+            
 
           #AI 
           if(playerMove == 3 and randNum == 1) or \
             (playerMove == 1 and randNum == 2) or \
             (playerMove == 2 and randNum == 3):
             scores[0] += 1
+            loseFlag = True 
+            
           print(playerMove)
 
   if stateResults:
     imgBG = cvzone.overlayPNG(imgBG,imgAI,(149,310))
+    if wonFlag == True:
+      cv2.putText(imgBG, wonText,(605,215), cv2.FONT_HERSHEY_PLAIN,6,(0,190,10),4)
+    elif loseFlag == True:
+      cv2.putText(imgBG, loseText,(605,215), cv2.FONT_HERSHEY_PLAIN,6,(190,0,10),4)
+    else:
+      cv2.putText(imgBG, drawText,(605,435), cv2.FONT_HERSHEY_PLAIN,6,(190,0,10),4)
 
-  cv2.putText(imgBG, str(int(scores[0])),(410,215), cv2.FONT_HERSHEY_PLAIN,4,(255,0,255),6)
-  cv2.putText(imgBG, str(int(scores[1])),(1112,215), cv2.FONT_HERSHEY_PLAIN,4,(255,0,255),6)
+  cv2.putText(imgBG, str(int(scores[0])),(410,215), cv2.FONT_HERSHEY_PLAIN,4,(255,255,255),6)
+  cv2.putText(imgBG, str(int(scores[1])),(1112,215), cv2.FONT_HERSHEY_PLAIN,4,(255,255,255),6)
+
+
 
   cv2.imshow("Image", imgBG)
 
@@ -73,5 +93,7 @@ while True:
     startGame = True
     initialTime = time.time()
     stateResults = False
+    wonFlag = False
+    loseFlag = False
   if key == ord('q'):
     break
